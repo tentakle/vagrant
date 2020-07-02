@@ -1,0 +1,38 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Set authorized key taken from file
+    authorized_key:
+      user: vagrant
+      state: present
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+  - name: Upgrade all packages
+    dnf:
+      name: "*"
+      state: latest
+  
+  - name: Install packages
+    dnf:
+      name:
+      - chrony
+      - htop
+      - moby-engine
+      state: present
+  
+  - name: Autoremove unneeded packages installed as dependencies
+    dnf:
+      autoremove: yes
+
+  - name: Check start and enable chrony service
+    systemd:
+      name: chronyd
+      enabled: yes
+      state: started
+
+  - name: Check start and enable docker service
+    systemd:
+      name: docker
+      enabled: yes
+      state: started
